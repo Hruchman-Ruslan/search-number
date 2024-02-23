@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ChangeEvent, useState } from "react";
+import { findMedian } from "../utils";
 
 export interface SearchNumberProps {}
 
@@ -8,6 +9,7 @@ export default function SearchNumber({}: SearchNumberProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [largestNumber, setLargestNumber] = useState<number | null>(null);
   const [smallestNumber, setSmallestNumber] = useState<number | null>(null);
+  const [median, setMedian] = useState<number | null>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -21,16 +23,18 @@ export default function SearchNumber({}: SearchNumberProps) {
         if (e.target) {
           const content = e.target.result as string;
           const numbers = content.split(/\s+/).map(Number);
+          const sortedNumbers = numbers.sort((a, b) => a - b);
           let maxNumber: number | null = null;
           let minNumber: number | null = null;
 
-          for (const num of numbers) {
+          for (const num of sortedNumbers) {
             if (maxNumber === null || num > maxNumber) maxNumber = num;
             if (minNumber === null || num < minNumber) minNumber = num;
           }
 
           setLargestNumber(maxNumber);
           setSmallestNumber(minNumber);
+          setMedian(findMedian(sortedNumbers));
         }
       };
       reader.readAsText(selectedFile);
@@ -43,7 +47,7 @@ export default function SearchNumber({}: SearchNumberProps) {
         <input
           type="file"
           onChange={handleFileChange}
-          className="border-2 border-purple-800 hover:bg-sky-700 p-1 rounded-md mr-2 cursor-pointer transition duration-500 ease-in-out"
+          className="border-2 border-purple-800 hover:bg-sky-700 font-bold p-1 rounded-md mr-2 cursor-pointer transition duration-500 ease-in-out"
         />
         <button
           onClick={handleSearch}
@@ -53,7 +57,7 @@ export default function SearchNumber({}: SearchNumberProps) {
         </button>
       </div>
 
-      {largestNumber !== null && smallestNumber !== null && (
+      {largestNumber !== null && smallestNumber !== null && median !== null && (
         <div className="border-2 border-purple-800 hover:bg-sky-700 p-1 rounded-md transition duration-500 ease-in-out">
           <ul className="flex flex-col gap-2 ">
             <li>
@@ -66,6 +70,10 @@ export default function SearchNumber({}: SearchNumberProps) {
               <span className=" text-white font-bold">
                 Smallest Number: {smallestNumber}
               </span>
+            </li>
+
+            <li>
+              <span className=" text-white font-bold">Median: {median}</span>
             </li>
           </ul>
         </div>
