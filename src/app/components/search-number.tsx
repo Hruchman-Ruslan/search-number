@@ -2,20 +2,39 @@
 
 import React, { ChangeEvent, useState } from "react";
 import Image from "next/image";
-import { findMean, findMedian } from "../utils";
+
+import {
+  findMean,
+  findMedian,
+  increasingSequence,
+  decreaseSequence,
+} from "../utils";
+
 import { Loading } from ".";
+
 import imageDefault from "../../../public/default.png";
 
 export interface SearchNumberProps {}
 
 export default function SearchNumber({}: SearchNumberProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [largestNumber, setLargestNumber] = useState<number | null>(null);
-  const [smallestNumber, setSmallestNumber] = useState<number | null>(null);
-  const [median, setMedian] = useState<number | null>(null);
-  const [mean, setMean] = useState<number | null>(null);
+  const [searchResult, setSearchResult] = useState<{
+    largestNumber: number | null;
+    smallestNumber: number | null;
+    median: number | null;
+    mean: number | null;
+    increasing: number[];
+    decreasing: number[];
+  }>({
+    largestNumber: null,
+    smallestNumber: null,
+    median: null,
+    mean: null,
+    increasing: [],
+    decreasing: [],
+  });
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -23,40 +42,36 @@ export default function SearchNumber({}: SearchNumberProps) {
   };
 
   const handleSearch = () => {
-    if (selectedFile) {
-      setLoading(true);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target) {
-          const content = e.target.result as string;
-          const numbers = content.split(/\s+/).map(Number);
-          const sortedNumbers = numbers.sort((a, b) => a - b);
-
-          let maxNumber: number | null = null;
-          let minNumber: number | null = null;
-
-          for (const num of sortedNumbers) {
-            if (maxNumber === null || num > maxNumber) maxNumber = num;
-            if (minNumber === null || num < minNumber) minNumber = num;
-          }
-
-          setLargestNumber(maxNumber);
-          setSmallestNumber(minNumber);
-          setMedian(findMedian(sortedNumbers));
-          setMean(findMean(sortedNumbers));
-          setLoading(false);
-          setError(false);
-        }
-      };
-      reader.readAsText(selectedFile);
+    if (!selectedFile) {
+      setError("Please choose a file.");
+      return;
     }
 
-    if (!selectedFile) setError(true);
+    setLoading(true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target) {
+        const content = e.target.result as string;
+        const numbers = content.split(/\s+/).map(Number);
+
+        const sortedNumbers = numbers.toSorted((a, b) => a - b);
+
+        setSearchResult({
+          largestNumber: sortedNumbers[sortedNumbers.length - 1],
+          smallestNumber: sortedNumbers[0],
+          median: findMedian(sortedNumbers),
+          mean: findMean(sortedNumbers),
+          increasing: increasingSequence(sortedNumbers),
+          decreasing: decreaseSequence(sortedNumbers.reverse()),
+        });
+        setLoading(false);
+        setError(null);
+      }
+    };
+    reader.readAsText(selectedFile);
   };
 
-  return loading ? (
-    <Loading />
-  ) : (
+  return (
     <div className="flex gap-5 items-center">
       <div>
         <input
@@ -72,34 +87,51 @@ export default function SearchNumber({}: SearchNumberProps) {
         </button>
       </div>
 
-      {largestNumber !== null &&
-        smallestNumber !== null &&
-        median !== null &&
-        mean !== null && (
+      {loading ? (
+        <Loading />
+      ) : (
+        searchResult.largestNumber !== null && (
           <div className="border-2 border-purple-800 hover:bg-sky-700 p-2 rounded-md transition duration-500 ease-in-out">
             <ul className="flex flex-col gap-2 ">
               <li>
                 <span className="text-white font-bold">
-                  Largest Number: {largestNumber}
+                  Largest Number: {searchResult.largestNumber}
                 </span>
               </li>
 
               <li>
                 <span className="text-white font-bold">
-                  Smallest Number: {smallestNumber}
+                  Smallest Number: {searchResult.smallestNumber}
                 </span>
               </li>
 
               <li>
-                <span className="text-white font-bold">Median: {median}</span>
+                <span className="text-white font-bold">
+                  Median: {searchResult.median}
+                </span>
               </li>
 
               <li>
-                <span className="text-white font-bold">Mean: {mean}</span>
+                <span className="text-white font-bold">
+                  Mean: {searchResult.mean}
+                </span>
+              </li>
+
+              <li>
+                <span className="text-white font-bold">
+                  Increasing Sequence: {searchResult.increasing.join(", ")}
+                </span>
+              </li>
+
+              <li>
+                <span className="text-white font-bold">
+                  Decreasing Sequence: {searchResult.decreasing.join(", ")}
+                </span>
               </li>
             </ul>
           </div>
-        )}
+        )
+      )}
 
       {error && (
         <div
@@ -108,7 +140,7 @@ export default function SearchNumber({}: SearchNumberProps) {
           style={{ animation: "fade-in 0.5s forwards" }}
         >
           <Image src={imageDefault} alt="default image" width={150} />
-          <p className="font-bold">Please choose the file.</p>
+          <p className="font-bold">{error}</p>
         </div>
       )}
     </div>
