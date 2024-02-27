@@ -3,12 +3,7 @@
 import React, { ChangeEvent, useState } from "react";
 import Image from "next/image";
 
-import {
-  findMean,
-  findMedian,
-  increasingSequence,
-  decreaseSequence,
-} from "../utils";
+import { findMean, findMedian, findSequence } from "../utils";
 
 import { Loading } from ".";
 
@@ -61,8 +56,8 @@ export default function SearchNumber({}: SearchNumberProps) {
           smallestNumber: sortedNumbers[0],
           median: findMedian(sortedNumbers),
           mean: findMean(sortedNumbers),
-          increasing: increasingSequence(sortedNumbers),
-          decreasing: decreaseSequence(sortedNumbers.reverse()),
+          increasing: findSequence(sortedNumbers, true),
+          decreasing: findSequence(sortedNumbers.reverse()),
         });
         setLoading(false);
         setError(null);
