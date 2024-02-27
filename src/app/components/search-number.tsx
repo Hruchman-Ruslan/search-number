@@ -108,7 +108,7 @@ export default function SearchNumber({}: SearchNumberProps) {
 
               <li>
                 <span className="text-white font-bold">
-                  Mean: {searchResult.mean}
+                  Arithmetic average: {searchResult.mean}
                 </span>
               </li>
 
