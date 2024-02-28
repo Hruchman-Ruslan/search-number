@@ -6,20 +6,22 @@ export const findSequence = (
   let currentLength = 1;
   let endIndex = 0;
 
-  for (let i = 1; i < numbers.length; i++) {
-    const condition = increasing
-      ? numbers[i] > numbers[i - 1]
-      : numbers[i] < numbers[i - 1];
-    if (condition) {
-      currentLength++;
-      if (currentLength > maxLength) {
-        maxLength = currentLength;
-        endIndex = i;
+  numbers.forEach((num, i) => {
+    if (i !== 0) {
+      const condition: boolean = increasing
+        ? num > numbers[i - 1]
+        : num < numbers[i - 1];
+      if (condition) {
+        currentLength++;
+        if (currentLength > maxLength) {
+          maxLength = currentLength;
+          endIndex = i;
+        }
+      } else {
+        currentLength = 1;
       }
-    } else {
-      currentLength = 1;
     }
-  }
+  });
 
   const startIndex = endIndex - maxLength + 1;
   return numbers.slice(startIndex, endIndex + 1);
