@@ -7,7 +7,7 @@ import { findMean, findMedian, findSequence } from "../utils";
 
 import { Loading } from ".";
 
-import imageDefault from "../../../public/default.png";
+import imageDefault from "/public/default.png";
 
 export interface SearchNumberProps {}
 
@@ -51,13 +51,15 @@ export default function SearchNumber({}: SearchNumberProps) {
 
         const sortedNumbers = numbers.toSorted((a, b) => a - b);
 
+        const { increasing, decreasing } = findSequence(sortedNumbers);
+
         setSearchResult({
           largestNumber: sortedNumbers[sortedNumbers.length - 1],
           smallestNumber: sortedNumbers[0],
           median: findMedian(sortedNumbers),
           mean: findMean(sortedNumbers),
-          increasing: findSequence(sortedNumbers, true),
-          decreasing: findSequence(sortedNumbers.reverse()),
+          increasing,
+          decreasing,
         });
         setLoading(false);
         setError(null);
